@@ -36,3 +36,6 @@ else
     pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu126
 fi
 pip install -r requirements.txt
+
+echo "alias futaba=\"source /home/shkiper/miniconda3/bin/activate futaba" >> .bahsrc
+echo "export PATH=\"\$PATH:/home/shkiper/bin/\"" >> .bashrc
