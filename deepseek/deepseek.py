@@ -1,43 +1,88 @@
+#!/usr/bin/env python3
+import argparse
+import sys
 import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
-import sys
 
-if len(sys.argv) < 3:
-    print('Слишком мало аргументов')
-    quit(1)
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="Генерация текста с помощью DeepSeek-R1-Distill-Qwen-14B"
+    )
+    parser.add_argument(
+        "--prompt_file", "-p",
+        required=True,
+        help="Путь к файлу с входным промптом (обязательный параметр)"
+    )
+    parser.add_argument(
+        "--output_file", "-o",
+        required=True,
+        help="Путь к файлу для записи результата (обязательный параметр)"
+    )
+    parser.add_argument(
+        "--device", "-d",
+        choices=["cpu", "cuda"],
+        default="cpu",
+        help="Устройство выполнения (по умолчанию cpu)"
+    )
+    parser.add_argument(
+        "--model_name", "-m",
+        default="deepseek-ai/DeepSeek-R1-Distill-Qwen-14B",
+        help="Имя модели в HuggingFace Hub"
+    )
+    parser.add_argument(
+        "--max_new_tokens", "-n",
+        type=int,
+        default=8192,
+        help="Максимальное число сгенерированных токенов"
+    )
+    return parser.parse_args()
 
-# Определение устройства: используем GPU, если доступно, иначе CPU.
-DEVICE = "cpu"
-MODEL_NAME = "deepseek-ai/DeepSeek-R1-Distill-Qwen-14B"
-MAX_NEW_TOKENS = 8192
+def main():
+    args = parse_args()
 
-# Чтение файлов
-with open(sys.argv[1], "r", encoding="utf-8") as f:
-    input_text = f.read()
+    # Чтение промпта
+    try:
+        with open(args.prompt_file, "r", encoding="utf-8") as f:
+            input_text = f.read()
+    except FileNotFoundError:
+        print(f"Ошибка: файл промпта не найден: {args.prompt_file}", file=sys.stderr)
+        sys.exit(1)
 
-# Загрузка токенизатора
-tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
+    # Подготовка устройства и загрузка модели
+    # Для CUDA: device_map="auto", для CPU — загрузка на CPU без device_map
+    dtype = torch.float16
+    model_kwargs = {"torch_dtype": dtype}
+    if args.device == "cuda":
+        model_kwargs["device_map"] = "auto"
 
-# Загрузка модели с вычислениями в fp16
-model = AutoModelForCausalLM.from_pretrained(
-    MODEL_NAME,
-    torch_dtype=torch.float16,   # вычисления в fp16
-    device_map=DEVICE
-)
+    tokenizer = AutoTokenizer.from_pretrained(args.model_name)
+    model = AutoModelForCausalLM.from_pretrained(
+        args.model_name,
+        **model_kwargs
+    )
 
-# Создание пайплайна для генерации текста
-generator = pipeline(
-    "text-generation",
-    model=model,
-    tokenizer=tokenizer
-)
+    # Настройка пайплайна: device = 0 для CUDA, -1 для CPU
+    pipeline_device = 0 if args.device == "cuda" else -1
+    generator = pipeline(
+        "text-generation",
+        model=model,
+        tokenizer=tokenizer,
+        device=pipeline_device
+    )
 
-# Генерация текста (настройте параметры при необходимости)
-result = generator(input_text, max_new_tokens=MAX_NEW_TOKENS, num_return_sequences=1)
+    # Генерация
+    result = generator(
+        input_text,
+        max_new_tokens=args.max_new_tokens,
+        num_return_sequences=1
+    )
+    generated_text = result[0]['generated_text']
 
-# Извлечение сгенерированного текста
-generated_text = result[0]['generated_text']
+    # Запись в файл
+    with open(args.output_file, "w", encoding="utf-8") as f:
+        f.write(generated_text)
 
-# Запись результата в файл result.txt
-with open(sys.argv[2], "w", encoding="utf-8") as f:
-    f.write(generated_text)
+    print(f"Генерация завершена, результат записан в {args.output_file}")
+
+if __name__ == "__main__":
+    main()
