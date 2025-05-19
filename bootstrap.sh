@@ -83,7 +83,8 @@ case "$ACTION" in
         scipy \
         six \
         tensorboard \
-        tqdm
+        tqdm \
+        sentencepiece
 
     # Quality‑of‑life alias – append only once
     if ! grep -q "alias futaba=" "$HOME/.bashrc"; then
