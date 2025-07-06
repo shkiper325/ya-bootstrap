@@ -49,10 +49,10 @@ def main():
         sys.exit(1)
 
     # Подготовка устройства и загрузка модели
-    # Для CUDA: device_map="auto", для CPU — загрузка на CPU без device_map
     dtype = torch.float16
     model_kwargs = {"torch_dtype": dtype}
     if args.device == "cuda":
+        # Accelerate автоматически распределит модель по доступным GPU
         model_kwargs["device_map"] = "auto"
 
     tokenizer = AutoTokenizer.from_pretrained(args.model_name)
@@ -61,13 +61,12 @@ def main():
         **model_kwargs
     )
 
-    # Настройка пайплайна: device = 0 для CUDA, -1 для CPU
-    pipeline_device = 0 if args.device == "cuda" else -1
+    # Создаём pipeline без явного указания `device`
+    # — Accelerate уже разложил модель по GPU/CPU
     generator = pipeline(
         "text-generation",
         model=model,
-        tokenizer=tokenizer,
-        device=pipeline_device
+        tokenizer=tokenizer
     )
 
     # Генерация
