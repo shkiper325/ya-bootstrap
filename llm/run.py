@@ -6,7 +6,7 @@ from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
 
 def parse_args():
     parser = argparse.ArgumentParser(
-        description="Генерация текста с помощью DeepSeek-R1-Distill-Qwen-14B"
+        description="Генерация текста с помощью LLM"
     )
     parser.add_argument(
         "--prompt_file", "-p",
