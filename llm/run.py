@@ -26,7 +26,7 @@ def parse_args():
     )
     parser.add_argument(
         "--model_name", "-m",
-        default="deepseek-ai/DeepSeek-R1-Distill-Qwen-14B",
+        default="yandex/YandexGPT-5-Lite-8B-instruct",
         help="Имя модели в HuggingFace Hub"
     )
     parser.add_argument(
