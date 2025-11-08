@@ -21,8 +21,8 @@ def parse_args():
     parser.add_argument(
         '--device',
         required=True,
-        choices=['cpu', 'gpu'],
-        help='Устройство для вычислений (cpu или gpu)'
+        choices=['cpu', 'cuda'],
+        help='Устройство для вычислений (cpu или cuda)'
     )
     parser.add_argument(
         '--model',
@@ -45,10 +45,10 @@ def transcribe_directory(directory, model, device):
     Args:
         directory: Путь к директории
         model: Загруженная модель Whisper
-        device: Устройство (cpu/gpu)
+        device: Устройство (cpu/cuda)
     """
-    # fp16 работает только на GPU
-    use_fp16 = (device == 'gpu')
+    # fp16 работает только на cuda
+    use_fp16 = (device == 'cuda')
 
     for root, _, files in os.walk(directory):
         for filename in files:
