@@ -45,7 +45,7 @@ case "$ACTION" in
 
   cpu|gpu)
     sudo apt update && sudo apt upgrade -y
-    sudo apt install build-essential nvidia-driver-580-server ffmpeg -y
+    sudo apt install build-essential nvidia-driver-580-server ffmpeg aptitude -y
 
     echo "[+] Fetching Miniconda installer…"
     wget -q "https://repo.anaconda.com/miniconda/$INSTALLER" -O "$HOME/$INSTALLER"
