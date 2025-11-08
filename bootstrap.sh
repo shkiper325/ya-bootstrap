@@ -65,7 +65,7 @@ case "$ACTION" in
     if [[ "$ACTION" == cpu ]]; then
       pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
     else
-      pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu126
+      pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu130
     fi
 
     echo "[+] Installing project Python dependencies…"
