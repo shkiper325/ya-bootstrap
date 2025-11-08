@@ -27,12 +27,8 @@ readonly INSTALLER="Miniconda3-latest-Linux-x86_64.sh"
 case "$ACTION" in
   cleanup)
     echo "[+] Removing Miniconda and model caches…"
-    rm -rf "$HOME/miniconda3" \
-           "$HOME/.cache/huggingface" \
-           "$HOME/.cache/whisper" \
-           "$HOME/$INSTALLER"
+    rm -rf "$HOME/.cache $HOME/$INSTALLER"
 
-    # Secure‑delete remaining free space (very slow on large disks – comment out if not needed)
     if command -v pv &>/dev/null; then
       echo "[+] Zero‑filling free space (this can take a while)…"
       dd if=/dev/zero bs=1M status=none | pv | dd of="$HOME/full.disk" bs=1M status=none
@@ -41,11 +37,15 @@ case "$ACTION" in
 
     echo "[+] Powering off host…"
     sudo poweroff || echo "sudo poweroff failed – manually shut down if desired."
+
     ;;
 
   cpu|gpu)
     sudo apt update && sudo apt upgrade -y
-    sudo apt install build-essential nvidia-driver-580-server ffmpeg aptitude -y
+    sudo apt install build-essential ffmpeg aptitude git-lfs libcurl4-openssl-dev cmake -y
+    if [[ "$ACTION" == gpu ]]; then
+        sudo apt install nvidia-driver-580-server nvidia-cuda-toolkit-*
+    fi
 
     echo "[+] Fetching Miniconda installer…"
     wget -q "https://repo.anaconda.com/miniconda/$INSTALLER" -O "$HOME/$INSTALLER"
@@ -54,7 +54,6 @@ case "$ACTION" in
     bash "$HOME/$INSTALLER" -b -p "$HOME/miniconda3"
     rm -f "$HOME/$INSTALLER"
 
-    # Initialise conda in the current shell
     eval "$("$HOME/miniconda3/bin/conda" shell.bash hook)"
 
     conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/main
@@ -66,13 +65,12 @@ case "$ACTION" in
 
     echo "[+] Installing PyTorch stack…"
     if [[ "$ACTION" == cpu ]]; then
-      pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
+      pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
     else
-      pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu130
+      pip install torch torchvision --index-url https://download.pytorch.org/whl/cu130
     fi
 
     echo "[+] Installing project Python dependencies…"
-    # Either adjust below or maintain a separate requirements.txt in the repo root
     pip install \
         numpy \
         openai-whisper \
@@ -92,7 +90,6 @@ case "$ACTION" in
         tqdm \
         sentencepiece
 
-    # Quality‑of‑life alias – append only once
     if ! grep -q "alias futaba=" "$HOME/.bashrc"; then
       printf "\n# Futaba ML env\nalias futaba=\"eval \$(~/miniconda3/bin/conda shell.bash hook) && conda activate futaba\"\n" >> "$HOME/.bashrc"
     fi
@@ -102,6 +99,21 @@ case "$ACTION" in
     cp -rp bin llm whisper "$HOME"
 
     echo "[+] Done. Start a new shell or run 'source ~/.bashrc' then 'futaba' to activate the env."
+
+    cd $HOME
+    git clone https://github.com/ggerganov/llama.cpp
+    cd llama.cpp
+    mkdir build
+    cd build
+    
+    if [[ "$ACTION" == gpu ]]; then
+        cmake .. -DGGML_CUDA=ON
+    else
+        cmake ..
+    fi
+    cmake --build . --config Release -j$(nproc)
+    sudo make install
+
     ;;
 
   *)
