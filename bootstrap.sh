@@ -13,6 +13,9 @@
 # NOTE: The script expects to run under an unprivileged user that can `sudo poweroff`.
 #       Remove or adapt that line if sudo rights are not available.
 
+sudo apt update && sudo apt upgrade
+sudo apt install build-essential nvidia-driver-580-server ffmpeg
+
 set -euo pipefail
 
 usage() {
