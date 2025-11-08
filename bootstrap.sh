@@ -99,7 +99,7 @@ case "$ACTION" in
 
     echo "export PATH=\"\$PATH:\$HOME/bin\"" >> "$HOME/.bashrc"
 
-    cp -rp bin deepseek whisper "$HOME"
+    cp -rp bin llm whisper "$HOME"
 
     echo "[+] Done. Start a new shell or run 'source ~/.bashrc' then 'futaba' to activate the env."
     ;;
