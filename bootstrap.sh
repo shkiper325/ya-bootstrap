@@ -13,9 +13,6 @@
 # NOTE: The script expects to run under an unprivileged user that can `sudo poweroff`.
 #       Remove or adapt that line if sudo rights are not available.
 
-sudo apt update && sudo apt upgrade
-sudo apt install build-essential nvidia-driver-580-server ffmpeg
-
 set -euo pipefail
 
 usage() {
@@ -47,6 +44,9 @@ case "$ACTION" in
     ;;
 
   cpu|gpu)
+    sudo apt update && sudo apt upgrade
+    sudo apt install build-essential nvidia-driver-580-server ffmpeg
+
     echo "[+] Fetching Miniconda installer…"
     wget -q "https://repo.anaconda.com/miniconda/$INSTALLER" -O "$HOME/$INSTALLER"
 
@@ -56,6 +56,9 @@ case "$ACTION" in
 
     # Initialise conda in the current shell
     eval "$("$HOME/miniconda3/bin/conda" shell.bash hook)"
+
+    conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/main
+    conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/r
 
     echo "[+] Creating \"futaba\" environment…"
     conda create -y -n futaba python=3.10
