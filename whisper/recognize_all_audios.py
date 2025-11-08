@@ -26,7 +26,7 @@ def parse_args():
     )
     parser.add_argument(
         '--model',
-        default='large',
+        default='large-v3',
         choices=['tiny', 'base', 'small', 'medium', 'large', 'large-v2', 'large-v3'],
         help='Модель Whisper (по умолчанию: large)'
     )
