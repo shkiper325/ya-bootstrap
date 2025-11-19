@@ -35,6 +35,10 @@ case "$ACTION" in
       sync && rm -f "$HOME/full.disk"
     fi
 
+    if command -v message &>/dev/null; then
+      message "Poweroff"
+    fi
+    
     echo "[+] Powering off host…"
     sudo poweroff || echo "sudo poweroff failed – manually shut down if desired."
 
