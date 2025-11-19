@@ -46,7 +46,7 @@ case "$ACTION" in
 
   cpu|gpu)
     sudo apt update && sudo apt upgrade -y
-    sudo apt install build-essential ffmpeg aptitude git-lfs libcurl4-openssl-dev cmake -y
+    sudo apt install build-essential ffmpeg aptitude git-lfs libcurl4-openssl-dev cmake pv -y
     if [[ "$ACTION" == gpu ]]; then
         sudo apt install nvidia-driver-580-server nvidia-cuda-toolkit-*
     fi
