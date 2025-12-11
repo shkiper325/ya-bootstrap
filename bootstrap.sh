@@ -31,8 +31,13 @@ case "$ACTION" in
 
     if command -v pv &>/dev/null; then
       echo "[+] Zero‑filling free space (this can take a while)…"
-      dd if=/dev/zero bs=1M status=none | pv | dd of="$HOME/full.disk" bs=1M status=none
+      dd if=/dev/zero bs=1M status=none | pv | dd of="$HOME/full.disk" bs=1M status=none || true
       sync && rm -f "$HOME/full.disk"
+    else
+      echo "[+] Can't fill free space with zeroes: no pv installation found"
+      if command -v message &>/dev/null; then
+        message "Error; server is still working"
+      fi
     fi
 
     if command -v message &>/dev/null; then
