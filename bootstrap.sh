@@ -26,8 +26,11 @@ readonly INSTALLER="Miniconda3-latest-Linux-x86_64.sh"
 
 case "$ACTION" in
   cleanup)
-    echo "[+] Removing Miniconda and model caches…"
+    echo "[+] Removing Miniconda and ~/.cache"
     rm -rf "$HOME/.cache $HOME/$INSTALLER"
+
+    echo "[+] Clearing apt cache"
+    sudo apt clean
 
     if command -v pv &>/dev/null; then
       echo "[+] Zero‑filling free space (this can take a while)…"
